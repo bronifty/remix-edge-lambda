@@ -6,7 +6,7 @@ import * as build from "./build/server/index.js";
 const app = express();
 
 // Serve static files from the client build directory
-app.use(express.static("build/client"));
+// app.use(express.static("build/client"));
 
 // Handle all routes with the Remix request handler
 app.all("*", createRequestHandler({ build }));

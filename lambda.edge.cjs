@@ -4,7 +4,14 @@ const url = require("url");
 exports.handler = (event, context, callback) => {
   const request = event.Records[0].cf.request;
 
-  // Construct the URL for the Lambda function
+  // Check if the request is for /assets
+  if (request.uri.startsWith("/assets")) {
+    // For /assets, we'll let CloudFront handle it (it will be routed to S3)
+    callback(null, request);
+    return;
+  }
+
+  // For all other requests, forward to your Lambda Function URL
   const lambdaUrl =
     "https://uuojvnj7bigwganm2yd74atcja0bdyyn.lambda-url.us-east-1.on.aws" +
     request.uri;
