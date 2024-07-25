@@ -8,7 +8,10 @@
     "dev": "node ./server.js",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "cross-env NODE_ENV=production node ./server.js",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "build-deploy": "pnpm build && node esbuild.mjs && mkdir deploy && cp -r build deploy/build && cp lambda.cjs deploy/lambda.cjs && zip -r deploy.zip ./deploy",
+    "local": "node local.js",
+    "clean": "rm -rf build deploy lambda.cjs"
   },
   "dependencies": {
     "@remix-run/express": "^2.10.3",
