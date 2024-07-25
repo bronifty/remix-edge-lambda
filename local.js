@@ -9,5 +9,5 @@ async function main(event) {
   console.log(result);
 }
 
-// main(apigRequest);
+main(apigRequest);
 main(cloudfrontRequest);
