@@ -1,7 +1,16 @@
 import { handler, app } from "../lambda.cjs";
 import { normalizeRequest } from "../utils/normalize-request.js";
-import apigRequest from "../events/apig.js";
-import cloudfrontRequest from "../events/cloudfront.js";
+import fs from "fs/promises";
+import path from "path";
+
+async function readJsonFile(filename) {
+  const filePath = path.join(process.cwd(), "events", filename);
+  const data = await fs.readFile(filePath, "utf8");
+  return JSON.parse(data);
+}
+
+const apigRequest = await readJsonFile("apig.json");
+const cloudfrontRequest = await readJsonFile("cloudfront.json");
 
 async function main(event) {
   const normalizedRequest = normalizeRequest(event);
