@@ -1,81 +1,53 @@
-const https = require("https");
-const url = require("url");
+const handler = async (event) => {
+  console.log("Initial event:", JSON.stringify(event, null, 2));
 
-exports.handler = (event, context, callback) => {
-  const request = event.Records[0].cf.request;
+  const response = event.Records[0].cf.response;
+  console.log("Initial response:", JSON.stringify(response, null, 2));
 
-  // Check if the request is for /assets
-  if (request.uri.startsWith("/assets")) {
-    // For /assets, we'll let CloudFront handle it (it will be routed to S3)
-    callback(null, request);
-    return;
+  const headers = response.headers;
+  console.log("Initial headers:", JSON.stringify(headers, null, 2));
+
+  const headerNameSrc = "X-Amz-Meta-Last-Modified";
+  const headerNameDst = "Last-Modified";
+
+  if (headers[headerNameSrc.toLowerCase()]) {
+    console.log(`Found header ${headerNameSrc}`);
+    headers[headerNameDst.toLowerCase()] = [
+      {
+        key: headerNameDst,
+        value: headers[headerNameSrc.toLowerCase()][0].value,
+      },
+    ];
+    console.log(
+      `Response header "${headerNameDst}" was set to ` +
+        `"${headers[headerNameDst.toLowerCase()][0].value}"`
+    );
+  } else {
+    console.log(`Header ${headerNameSrc} not found`);
   }
 
-  // For all other requests, forward to your Lambda Function URL
-  const lambdaUrl =
-    "https://uuojvnj7bigwganm2yd74atcja0bdyyn.lambda-url.us-east-1.on.aws" +
-    request.uri;
-  const parsedUrl = url.parse(lambdaUrl);
-
-  // Prepare headers for the HTTPS request
-  const headers = {};
-  Object.keys(request.headers).forEach((key) => {
-    headers[key] = request.headers[key][0].value;
-  });
-
-  // Options for the HTTPS request
-  const options = {
-    hostname: parsedUrl.hostname,
-    path: parsedUrl.path,
-    method: request.method,
-    headers: headers,
-  };
-
-  // Make a request to the Lambda URL
-  const req = https.request(options, (res) => {
-    let body = "";
-
-    res.on("data", (chunk) => {
-      body += chunk;
-    });
-
-    res.on("end", () => {
-      // Construct the response object
-      const response = {
-        status: res.statusCode.toString(),
-        statusDescription: res.statusMessage,
-        headers: {},
-        body: body,
-      };
-
-      // Convert headers to CloudFront format
-      Object.keys(res.headers).forEach((key) => {
-        response.headers[key.toLowerCase()] = [
-          {
-            key: key,
-            value: res.headers[key],
-          },
-        ];
-      });
-
-      // Send the response back to CloudFront
-      callback(null, response);
-    });
-  });
-
-  req.on("error", (e) => {
-    // Handle any errors
-    callback(null, {
-      status: "500",
-      statusDescription: "Internal Server Error",
-      body: e.message,
-    });
-  });
-
-  // If there's a body in the original request, write it to the new request
-  if (request.body && request.body.data) {
-    req.write(request.body.data);
-  }
-
-  req.end();
+  console.log("Final response:", JSON.stringify(response, null, 2));
+  return response;
 };
+
+// Test the function locally
+const fs = require("fs");
+const path = require("path");
+
+const eventPath = path.join(
+  __dirname,
+  "test",
+  "cloudfront-modify-response-header.json"
+);
+const eventData = fs.readFileSync(eventPath, "utf8");
+const event = JSON.parse(eventData);
+
+handler(event)
+  .then((result) => {
+    console.log("Function result:", JSON.stringify(result, null, 2));
+  })
+  .catch((error) => {
+    console.error("Error:", error);
+  });
+
+module.exports = { handler };
