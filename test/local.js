@@ -1,4 +1,4 @@
-import { handler, app } from "../deploy/lambda.cjs";
+import { handler, app } from "../lambda.cjs";
 import { normalizeRequest } from "../utils/normalize-request.js";
 import apigRequest from "../events/apig.js";
 import cloudfrontRequest from "../events/cloudfront.js";
