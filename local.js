@@ -1,4 +1,4 @@
-import { handler } from "./lambda.js";
+import { handler, app } from "./lambda.js";
 import { normalizeRequest } from "./normalize-request.js";
 import apigRequest from "./events/apig.js";
 import cloudfrontRequest from "./events/cloudfront.js";
@@ -11,3 +11,7 @@ async function main(event) {
 
 main(apigRequest);
 main(cloudfrontRequest);
+
+app.listen(3000, () => {
+  console.log("Server is running on port 3000");
+});

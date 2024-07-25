@@ -17,7 +17,7 @@ app.all("*", createRequestHandler({ build }));
 const serverlessHandler = serverless(app);
 
 // Export the handler function for Lambda
-export const handler = async (event, context) => {
+const handler = async (event, context) => {
   // Cloudfront sends requests with lowercase headers
   // This normalizes the headers to work with Express
   const normalizedEvent = {
@@ -39,3 +39,5 @@ export const handler = async (event, context) => {
 
   return result;
 };
+
+export { app, handler };
